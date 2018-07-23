@@ -12,13 +12,12 @@
 setwd("C:/Users/maxbs/Documents/R/NFLSpreads/data")
 spreads = read.csv(file='spreadspoke_scores.csv',header=T,stringsAsFactors = F)
 library(dplyr)
-names(nfl)
 
-ggplot(nfl %>% group_by(schedule_season) %>% summarise(m=median(Error)),aes(schedule_season,m))+geom_point(color='darkgreen')+geom_hline(yintercept = 0)
 
-#
+
 #   CLEANING THE DATA SET
-#
+
+
 
 # spread and O/U data began in 1979 so we only observe this data
 spreads = spreads %>% filter(schedule_season>=1979); nrow(spreads) == 9643 #confirm dataset is right size
@@ -171,7 +170,6 @@ spreads$Error<-spreads$scoreFavMinDog-spreads$line
 #create ErrMag variable: the absolute value of Error. Purely measures inaccuracy of lines
 spreads$ErrMag<-abs(spreads$Error)
 
-
 # ADDRESS O/U
 # create 'scoretotal', the sum of the score from games
 spreads$scoretotal=spreads$score_home+spreads$score_away
@@ -183,50 +181,6 @@ spreads$OUError = spreads$scoretotal-spreads$over_under_line
 #WRITE CLEAN BOY IN TO DATA FOLDER
 
 write.csv(spreads,file='NFL_Spreads_clean.csv',row.names = F)
-
-
-
-#
-#   LET THE GAMES BEGIN
-#
-
-
-library(ggplot2)
-
-nrow(spreads[spreads$Error>0,]) #favorite covers
-nrow(spreads[spreads$Error<0,]) #dog covers
-nrow(spreads[spreads$Error==0,]) # push
-
-t.test(spreads$Error)
-ggplot(spreads,aes(Error))+geom_histogram(bins=30,col='black',fill='darkgreen')
-
-
-
-
-
-
-
-
-#and now we graph
-library(ggplot2)
-
-#Histogram of Error
-#rename residual to be 'Error'
-spreads = spreads %>% mutate(Error=residual) %>% select(-residual)
-ggplot(spreads, aes(Error))+geom_freqpoly(bins=30)
-ggplot(spreads, aes(Error))+geom_histogram(bins=20,aes(color='red'))
-
-t.test(spreads$Error)
-mean(spreads$Error)
-
-#Accuracy By Season
-ggplot(spreads,aes(schedule_season,AR))+geom_smooth(method='gam')+geom_point()
-ggplot(spreads[spreads$AR>=40,],aes(schedule_season,AR))+geom_smooth(method='gam')+geom_point()
-ggplot(spreads %>% group_by(schedule_season) %>% summarise(AR=mean(AR)),aes(schedule_season,AR))+geom_point()
-
-# Accuracy By Week of Season
-ggplot(spreads %>% group_by(schedule_week) %>% summarise(AR=mean(AR)),aes(schedule_week,y=AR))+geom_point()+geom_smooth(method='lm')
-ggplot(spreads %>% filter(schedule_week<18) %>% group_by(schedule_week) %>% summarise(AR=median(AR)),aes(schedule_week,y=AR))+geom_point()+geom_smooth(method='lm')
 
 
 
