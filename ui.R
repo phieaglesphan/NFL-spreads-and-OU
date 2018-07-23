@@ -16,9 +16,16 @@ dashboardPage(
   dashboardBody(
     tabItems(
       tabItem(tabName="background",
+            fluidRow(
+              h3('A Brief Introduction of NFL Gambling'),
+              h5(intro),
+              h3('The Data'),
+              h5(thedata),
+              h3("Author's Note"),
+              h5(note),
               img(src='https://imagesvc.timeincapp.com/v3/fan/image?url=https://fansided.com/wp-content/uploads/getty-images/2018/02/908549714-nfc-championship-minnesota-vikings-v-philadelphia-eagles.jpg.jpg&',
-                  width='77%',height='77%')
-              ),
+                  width='100%',height='100%')
+              )),
       tabItem(tabName = "spreads", # each row should represent a graph (in the box), and the tabBox next to it let's you diddle the parameters
               fluidRow( # Results Bar Chart
                 h3('Spread Results'),
@@ -41,8 +48,11 @@ dashboardPage(
                            h5('Week 19: Divisional Round'),
                            h5('Week 20: Conference Championships'),
                            h5('Week 21: Super Bowl')),
-                  tabPanel('By Team')
+                  tabPanel('By Team'
+                           #selectInput('TeamsResultsSpreads', value=teams)
+                           )
                 )
+                           
               ),
               fluidRow( # Distribution of Error
                 h3('Distribution of Error'),
@@ -74,7 +84,7 @@ dashboardPage(
               ))),
               fluidRow( # SPREADS - Inaccuracy by Season
                 h3('Inaccuracy by Season'),
-                h5('Each point represents the average difference from the realized spread to the line offered by Vegas of every game, by season'),
+                h5('Each dot represents the average difference from the realized spread to the line offered by Vegas of every game, by season'),
                 box(
                   plotOutput('spreadsInaccuracySeason')
                 ),
@@ -98,7 +108,7 @@ dashboardPage(
               ),
               fluidRow( # SPREADS - Inaccuracy by Week of Season
                 h3('Inaccuracy by Week'),
-                h5('Each point represents the average difference from the realized spread to the line offered by Vegas of every season, by the weekly schedule'),
+                h5('Each dot represents the average difference from the realized spread to the line offered by Vegas of every season, by the weekly schedule'),
                 box(
                   plotOutput('spreadsInaccuracyWeek')
                 ),
@@ -172,7 +182,7 @@ dashboardPage(
               ),
               fluidRow( # O/U by Season
                 h3('Inaccuracy by Season'),
-                h5('Each point represents the average difference from the realized Over/Under to the line offered by Vegas of every game, by season'),
+                h5('Each dot represents the average difference from the realized Over/Under to the line offered by Vegas of every game, by season'),
                 box(
                   plotOutput('OUbySeason')
                 ),
@@ -193,7 +203,7 @@ dashboardPage(
               ),
               fluidRow( # O/U by Week
                 h3('Inaccuracy by Week'),
-                h5('Each point represents the average difference from the realized Over/Under to the line offered by Vegas of every season, by the weekly schedule'),
+                h5('Each dot represents the average difference from the realized Over/Under to the line offered by Vegas of every season, by the weekly schedule'),
                 box(
                   plotOutput('OUbyWeek')
                 ),
