@@ -6,9 +6,6 @@ library(shiny)
 library(shinydashboard)
 library(DT)
 
-Select_All=c(sort(unique(nfl$team_home)))
-teams=c(Select_All, sort(unique(nfl$team_home)))
-
 
 intro="The NFL is the highest-grossing sports league in the world. In 2017, the NFL generated approximately $14 billion USD. In July of 2018, 
 Forbes reported that 29 of the NFL's 32 teams are included in their list of the 50 most valuable sports franchises in the world. The American Gaming Association, 

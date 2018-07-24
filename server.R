@@ -1,41 +1,103 @@
 shinyServer(function(input, output) {
    
+  spreadsResults <- reactive({ # Reactive function to choose teams in 1st chart (below)
+    if (input$TeamsResultsSpreads!="Select All") { # A team is selected
+      team_subset <- subset(nfl, team_home == input$TeamsResultsSpreads | team_away == input$TeamsResultsSpreads)
+      return(team_subset)
+    }
+    else {
+      return(nfl)
+    }
+  })
+  
   output$spreadsResults <- renderPlot({  # RESULTS BAR CHART
-    ggplot(nfl %>% filter(line>=input$LineResultsSpreads[1] & line<=input$LineResultsSpreads[2])
+    ggplot(spreadsResults() %>% filter(line>=input$LineResultsSpreads[1] & line<=input$LineResultsSpreads[2])
            %>% filter(schedule_season>=input$SeasonsResultsSpreads[1] & schedule_season<=input$SeasonsResultsSpreads[2])
           %>% filter(schedule_week>=input$WeekResultsSpreads[1] & schedule_week<=input$WeekResultsSpreads[2])
           %>% group_by(c=sign(Error)) %>% summarise(n=length(sign(Error))),aes(reorder(c,-n),n)) +
           geom_col(fill='darkgreen',color='black')+xlab('Result')+ylab('Count')
   })
   
+  spreadsDistribution <- reactive({ # Reactive function for teams in Spreads Histogram (below)
+    if (input$TeamDistSpreads!="Select All") {
+      team_subset <- subset(nfl, team_home == input$TeamDistSpreads | team_away == input$TeamDistSpreads)
+      return(team_subset)
+    }
+    else {
+      return(nfl)
+    }
+  })
+  
   output$spreadsDistribution <- renderPlot({ # HISTOGRAM FOR SPREADS ERROR
-    ggplot(nfl  %>% filter(line>=input$LineDistSpreads[1] & line<=input$LineDistSpreads[2])
+    ggplot(spreadsDistribution()  %>% filter(line>=input$LineDistSpreads[1] & line<=input$LineDistSpreads[2])
            %>% filter(schedule_season>=input$SeasonsDistSpreads[1] & schedule_season<=input$SeasonsDistSpreads[2])
            %>% filter(schedule_week>=input$WeekDistSpreads[1] & schedule_week<=input$WeekDistSpreads[2])
            ,aes(Error)) + geom_histogram(bins=input$BinsDistSpreads,col='black',fill='darkgreen') + ylab('Count')
   })
   
+  spreadsInaccuracySeason <- reactive({ # Reactive function for teams in Spreads Inacc. by Season (below)
+    if (input$TeamSeasonSpreads!="Select All") { # IF user did choose a team
+      teamchoice=input$TeamSeasonSpreads
+      team_subset <- subset(nfl, team_home == teamchoice | team_away == teamchoice)
+      if(input$TeamFavSeasonSpreads==2) { # If they are the favorite
+        team_fav_subset <- subset(team_subset, team_favorite_id==teamchoice)
+        return(team_fav_subset)
+      }
+      else if (input$TeamFavSeasonSpreads==3) { #If they are the underdog
+        team_dog_subset<-subset(team_subset, team_favorite_id!=teamchoice)
+        return(team_dog_subset)
+      }
+      else{ #If the default (no filter) is chosen
+        return(team_subset)
+      }
+    }
+    else { #If no team is chosen
+      return(nfl)
+    }
+  })
+  
   output$spreadsInaccuracySeason <- renderPlot({ # SCATTER PLOT FOR SPREADS BY SEASON
-    if(input$TypeSeasonSpreads==2){ # Plot if two-sided error
-          ggplot(nfl %>% filter(schedule_week>=input$WeeksSeasonSpreads[1] & schedule_week<=input$WeeksSeasonSpreads[2])
+    if(input$TypeSeasonSpreads==1){ # Plot if two-sided error
+          ggplot(spreadsInaccuracySeason() %>% filter(schedule_week>=input$WeeksSeasonSpreads[1] & schedule_week<=input$WeeksSeasonSpreads[2])
           %>% group_by(schedule_season) %>% summarise(m=mean(Error)), aes(schedule_season,m))+
           geom_point(color='darkgreen',size=4)+geom_hline(yintercept = 0)+ylab('Avg. Point Differential')+xlab('NFL Season')
     }
     else{ # Plot if absolute error
-      ggplot(nfl %>% filter(schedule_week>=input$WeeksSeasonSpreads[1] & schedule_week<=input$WeeksSeasonSpreads[2])
+      ggplot(spreadsInaccuracySeason() %>% filter(schedule_week>=input$WeeksSeasonSpreads[1] & schedule_week<=input$WeeksSeasonSpreads[2])
              %>% group_by(schedule_season) %>% summarise(m=mean(ErrMag)), aes(schedule_season,m))+
         geom_point(color='darkgreen',size=4)+ylab('Avg. Point Differential')+xlab('NFL Season')
     }  
   })
   
+  spreadsInaccuracyWeek <- reactive({ # Reactive function for teams in Spreads Inacc. by Week (below)
+    if (input$TeamWeekSpreads!="Select All") { # IF the user did choose a team
+      teamchoice2=input$TeamWeekSpreads
+      team_subset <- subset(nfl, team_home == input$TeamWeekSpreads | team_away == input$TeamWeekSpreads)
+      if(input$TeamFavWeekSpreads==2){ # IF that team is the favorite
+        team_fav_subset <- subset(team_subset, team_favorite_id==teamchoice2)
+        return(team_fav_subset)
+      }
+      else if(input$TeamFavWeekSpreads==3){ # IF that team is the underdog
+        team_dog_subset<-subset(team_subset, team_favorite_id!=teamchoice2)
+        return(team_dog_subset)
+      }
+      else{
+        return(team_subset)
+      }
+    }
+    else {
+      return(nfl)
+    }
+  })
+
   output$spreadsInaccuracyWeek <- renderPlot({ # SCATTER PLOT FOR SPREADS BY WEEK
-    if(input$TypeWeekSpreads==2){ #Plot if two-sided Error
-      ggplot(nfl %>% filter(schedule_season>=input$SeasonWeekSpreads[1] & schedule_season<=input$SeasonWeekSpreads[2])
+    if(input$TypeWeekSpreads==1){ #Plot if two-sided Error
+      ggplot(spreadsInaccuracyWeek() %>% filter(schedule_season>=input$SeasonWeekSpreads[1] & schedule_season<=input$SeasonWeekSpreads[2])
              %>% group_by(schedule_week) %>% summarise(m=mean(Error)),aes(schedule_week,m))+geom_point(color='darkgreen',size=4)+
               geom_hline(yintercept = 0)+geom_vline(xintercept=17.5)+ylab('Avg. Point Differential')+xlab('Week of Schedule')
     }
     else{ #Plot if absolut Error
-      ggplot(nfl %>% filter(schedule_season>=input$SeasonWeekSpreads[1] & schedule_season<=input$SeasonWeekSpreads[2])
+      ggplot(spreadsInaccuracyWeek() %>% filter(schedule_season>=input$SeasonWeekSpreads[1] & schedule_season<=input$SeasonWeekSpreads[2])
              %>% group_by(schedule_week) %>% summarise(m=mean(ErrMag)),aes(schedule_week,m))+geom_point(color='darkgreen',size=4)+
             geom_vline(xintercept=17.5)+ylab('Avg. Point Differential')+xlab('Week of Schedule')
     }
@@ -43,42 +105,82 @@ shinyServer(function(input, output) {
 
 ############################################################  OVER / UNDER CHARTS  ############################################################
   
+  OUResults <- reactive({ # Reactive function for teams in 1st chart (below)
+    if (input$TeamsResultsOU!="Select All") {
+      team_subset <- subset(nfl, team_home == input$TeamsResultsOU | team_away == input$TeamsResultsOU)
+      return(team_subset)
+    }
+    else {
+      return(nfl)
+    }
+  })
+  
   output$OUResults <- renderPlot({ # BAR CHART FOR O/U RESULTS
-    ggplot(nfl %>% filter(over_under_line>=input$LineResultsOU[1] & over_under_line<=input$LineResultsOU[2])
+    ggplot(OUResults() %>% filter(over_under_line>=input$LineResultsOU[1] & over_under_line<=input$LineResultsOU[2])
            %>% filter(schedule_season>=input$SeasonsResultsOU[1] & schedule_season<=input$SeasonsResultsOU[2])
            %>% filter(schedule_week>=input$WeekResultsOU[1] & schedule_week<=input$WeekResultsOU[2])
            %>% group_by(c=sign(OUError)) %>% summarise(n=length(sign(OUError))),aes(reorder(c,-n),n)) +
           geom_col(fill='darkgreen',color='black')+xlab('Result')+ylab('Count')
   })
   
+  ouHistogram <- reactive({ # Reactive function for teams in OU Histogram (below)
+    if (input$TeamDistOU!="Select All") {
+      team_subset <- subset(nfl, team_home == input$TeamDistOU | team_away == input$TeamDistOU)
+      return(team_subset)
+    }
+    else {
+      return(nfl)
+    }
+  })
+  
   output$ouHistogram <- renderPlot({ # HISTOGRAM FOR O/U 
-    ggplot(nfl  %>% filter(over_under_line>=input$LineDistOU[1] & over_under_line<=input$LineDistOU[2])
+    ggplot(ouHistogram()  %>% filter(over_under_line>=input$LineDistOU[1] & over_under_line<=input$LineDistOU[2])
             %>%  filter(schedule_season>=input$SeasonsDistOU[1] & schedule_season<=input$SeasonsDistOU[2])
            %>% filter(schedule_week>=input$WeekDistOU[1] & schedule_week<=input$WeekDistOU[2])
            ,aes(OUError)) + geom_histogram(bins=input$BinsDistOU,col='black',fill='darkgreen')+ylab('Count')+xlab('Error')
   })
   
+  OUbySeason <- reactive({ # Reactive function for teams in OU Inacc. by Season (below)
+    if (input$TeamSeasonOU!="Select All") {
+      team_subset <- subset(nfl, team_home == input$TeamSeasonOU | team_away == input$TeamSeasonOU)
+      return(team_subset)
+    }
+    else {
+      return(nfl)
+    }
+  })
+  
   output$OUbySeason <- renderPlot({
-    if(input$TypeSeasonOU==2){ # Plot if two-sided Error
-      ggplot(nfl %>% filter(!is.na(over_under_line)) %>% filter(schedule_week>=input$WeeksSeasonOU[1] & schedule_week<=input$WeeksSeasonOU[2]) 
+    if(input$TypeSeasonOU==1){ # Plot if two-sided Error
+      ggplot(OUbySeason() %>% filter(!is.na(over_under_line)) %>% filter(schedule_week>=input$WeeksSeasonOU[1] & schedule_week<=input$WeeksSeasonOU[2]) 
              %>% group_by(schedule_season) %>% summarise(m=mean(OUError)),aes(schedule_season,m))+
             geom_point(color='darkgreen',size=4)+geom_hline(yintercept = 0)+ylab('Avg. Point Differential')+xlab('NFL Season')
     }
     else{ # Plot for absolute error
-      ggplot(nfl %>% filter(!is.na(over_under_line)) %>% filter(schedule_week>=input$WeeksSeasonOU[1] & schedule_week<=input$WeeksSeasonOU[2]) 
+      ggplot(OUbySeason() %>% filter(!is.na(over_under_line)) %>% filter(schedule_week>=input$WeeksSeasonOU[1] & schedule_week<=input$WeeksSeasonOU[2]) 
              %>% group_by(schedule_season) %>% summarise(m=mean(abs(OUError))),aes(schedule_season,m))+
             geom_point(color='darkgreen',size=4)+ylab('Avg. Point Differential')+xlab('NFL Season')
     }
   })
   
+  OUbyWeek <- reactive({ # Reactive function for teams in OU Inacc. by Season (below)
+    if (input$TeamWeekOU!="Select All") {
+      team_subset <- subset(nfl, team_home == input$TeamWeekOU | team_away == input$TeamWeekOU)
+      return(team_subset)
+    }
+    else {
+      return(nfl)
+    }
+  })
+  
   output$OUbyWeek <- renderPlot({
-    if(input$TypeWeekOU==2){ # Plot if two-sided Error
-        ggplot(nfl %>% filter(!is.na(over_under_line)) %>% filter(schedule_season>=input$SeasonWeekOU[1] & schedule_season<=input$SeasonWeekOU[2]) 
+    if(input$TypeWeekOU==1){ # Plot if two-sided Error
+        ggplot(OUbyWeek() %>% filter(!is.na(over_under_line)) %>% filter(schedule_season>=input$SeasonWeekOU[1] & schedule_season<=input$SeasonWeekOU[2]) 
         %>% group_by(schedule_week) %>% summarise(m=mean(OUError)),aes(schedule_week,m))+
         geom_point(color='darkgreen',size=4)+geom_hline(yintercept = 0)+geom_vline(xintercept = 17.5)+ylab('Avg. Point Differential')+xlab('Week of Schedule')
     }
     else { # Plot if absolute error
-        ggplot(nfl %>% filter(!is.na(over_under_line)) %>% filter(schedule_season>=input$SeasonWeekOU[1] & schedule_season<=input$SeasonWeekOU[2]) 
+        ggplot(OUbyWeek() %>% filter(!is.na(over_under_line)) %>% filter(schedule_season>=input$SeasonWeekOU[1] & schedule_season<=input$SeasonWeekOU[2]) 
         %>% group_by(schedule_week) %>% summarise(m=mean(abs(OUError))),aes(schedule_week,m))+
         geom_point(color='darkgreen',size=4)+geom_vline(xintercept = 17.5)+ylab('Avg. Point Differential')+xlab('Week of Schedule')
     }

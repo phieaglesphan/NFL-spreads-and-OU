@@ -26,7 +26,7 @@ dashboardPage(
               img(src='https://imagesvc.timeincapp.com/v3/fan/image?url=https://fansided.com/wp-content/uploads/getty-images/2018/02/908549714-nfc-championship-minnesota-vikings-v-philadelphia-eagles.jpg.jpg&',
                   width='100%',height='100%')
               )),
-      tabItem(tabName = "spreads", # each row should represent a graph (in the box), and the tabBox next to it let's you diddle the parameters
+      tabItem(tabName = "spreads", 
               fluidRow( # Results Bar Chart
                 h3('Spread Results'),
                 h5('Examining the outcome of real game scores vs. the spread'),
@@ -38,6 +38,9 @@ dashboardPage(
                   tabPanel('By Line',
                            sliderInput('LineResultsSpreads',min=0,max=27,value=c(0,27),step=1,label='Filtering by Magnitude of Line:')
                   ),
+                  tabPanel('By Team',
+                           selectizeInput('TeamsResultsSpreads', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All")
+                  ),
                   tabPanel("By Season",
                            sliderInput('SeasonsResultsSpreads',min=1979,max=2017,value=c(1979,2017),step=1,label='Seasons:',sep='')
                   ),
@@ -47,10 +50,7 @@ dashboardPage(
                            h5('Week 18: Wildcard Round'),
                            h5('Week 19: Divisional Round'),
                            h5('Week 20: Conference Championships'),
-                           h5('Week 21: Super Bowl')),
-                  tabPanel('By Team'
-                           #selectInput('TeamsResultsSpreads', value=teams)
-                           )
+                           h5('Week 21: Super Bowl'))
                 )
                            
               ),
@@ -68,6 +68,9 @@ dashboardPage(
                   tabPanel('By Line',
                            sliderInput('LineDistSpreads',min=0,max=27,value=c(0,27),step=1,label='Filtering by Magnitude of Line:')
                            ),
+                  tabPanel('By Team',
+                           selectizeInput('TeamDistSpreads', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All")
+                  ),
                   tabPanel("By Season",
                            sliderInput('SeasonsDistSpreads',min=1979,max=2017,value=c(1979,2017),step=1,label='Seasons:',sep='')
                           ),
@@ -80,20 +83,24 @@ dashboardPage(
                            h5('Week 21: Super Bowl')),
                   tabPanel("Other Options"
                            
-                           #, checklist('TeamDistSpreads'))
               ))),
               fluidRow( # SPREADS - Inaccuracy by Season
                 h3('Inaccuracy by Season'),
-                h5('Each dot represents the average difference from the realized spread to the line offered by Vegas of every game, by season'),
+                h5('Each dot represents the average difference from the realized spread to the line offered by Vegas of every game, by season.'),
+                h5("Two-Sided Error is positive if the favorite beat the spread, and is negative if the underdog beat the spread."),
                 box(
                   plotOutput('spreadsInaccuracySeason')
                 ),
                 tabBox(
                   title = tagList(shiny::icon("gear"), "Modify Chart"),
                   tabPanel("Type of Error",
-                           radioButtons('TypeSeasonSpreads',label='Chart Shows:',choices = list('Absolute Error'=1,'Two-Sided Error'=2),selected=1),
-                          h5("REMINDER: Two-Sided Error is positive if the favorite beat the spread, and is negative if the underdog beat the spread.")
+                           radioButtons('TypeSeasonSpreads',label='Chart Shows:',choices = list('Two-Sided Error'=1,'Absolute Error'=2),selected=1)
                           ),
+                  tabPanel('By Team',
+                           selectizeInput('TeamSeasonSpreads', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All"),
+                           h5('When you select a team, you can also select which side of the spread they are on.'),
+                           radioButtons('TeamFavSeasonSpreads',label='Selected Team As:',choices=list('(All Games)'=1,'Favorite'=2,'Underdog'=3),selected=1)
+                  ),
                   tabPanel("Filter Weeks",
                             sliderInput('WeeksSeasonSpreads', min=1,max=21,value=c(1,21),step=1,label='Filter Data to Only Include These Weeks:'),
                             h5('Weeks 1 - 17: Regular Season'),
@@ -108,16 +115,21 @@ dashboardPage(
               ),
               fluidRow( # SPREADS - Inaccuracy by Week of Season
                 h3('Inaccuracy by Week'),
-                h5('Each dot represents the average difference from the realized spread to the line offered by Vegas of every season, by the weekly schedule'),
+                h5('Each dot represents the average difference from the realized spread to the line offered by Vegas of every season, by the weekly schedule.'),
+                h5("Two-Sided Error is positive if the favorite beat the spread, and is negative if the underdog beat the spread."),
                 box(
                   plotOutput('spreadsInaccuracyWeek')
                 ),
                 tabBox(
                   title = tagList(shiny::icon("gear"), "Modify Chart"),
                   tabPanel("Type of Error",
-                           radioButtons('TypeWeekSpreads',label='Chart Shows:',choices = list('Absolute Error'=1,'Two-Sided Error'=2),selected=1),
-                           h5("REMINDER: Two-Sided Error is positive if the favorite beat the spread, and is negative if the underdog beat the spread.")
+                           radioButtons('TypeWeekSpreads',label='Chart Shows:',choices = list('Two-Sided Error'=1,'Absolute Error'=2),selected=1)
                            ),
+                  tabPanel('By Team',
+                           selectizeInput('TeamWeekSpreads', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All"),
+                           h5('When you select a team, you can also select which side of the spread they are on.'),
+                           radioButtons('TeamFavWeekSpreads',label='Selected Team As:',choices=list('(All Games)'=1,'Favorite'=2,'Underdog'=3),selected=1)
+                  ),
                   tabPanel("Filter Seasons",
                             sliderInput('SeasonWeekSpreads',min=1979,max=2017,value=c(1979,2017),step=1,label='Filter Data to Only Include These Seasons:',sep='')
                            ),
@@ -128,7 +140,10 @@ dashboardPage(
                   )
                 )
               ),
-      tabItem(tabName = "overunder", # THE O/U PAGE
+     
+##############################################################  O/U #############################################################################################      
+      
+       tabItem(tabName = "overunder", # THE O/U PAGE
               fluidRow(   # OU Results
                 h3('Over/Under Results'),
                 h5('Examining the outcome of real game scores vs. the Over/Under'),
@@ -140,6 +155,9 @@ dashboardPage(
                   tabPanel('By Line',
                            sliderInput('LineResultsOU',min=28,max=63,value=c(28,63),step=1,label='Filtering by Magnitude of Line:')
                   ),
+                  tabPanel('By Team',
+                           selectizeInput('TeamsResultsOU', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All")
+                  ),
                   tabPanel("By Season",
                            sliderInput('SeasonsResultsOU',min=1979,max=2017,value=c(1979,2017),step=1,label='Seasons:',sep='')
                   ),
@@ -149,8 +167,7 @@ dashboardPage(
                            h5('Week 18: Wildcard Round'),
                            h5('Week 19: Divisional Round'),
                            h5('Week 20: Conference Championships'),
-                           h5('Week 21: Super Bowl')),
-                  tabPanel('By Team')
+                           h5('Week 21: Super Bowl'))
                 )
               ),
               fluidRow(   # OU Distribution of Error
@@ -167,6 +184,9 @@ dashboardPage(
                   tabPanel('By Line',
                            sliderInput('LineDistOU', min=28,max=63,value=c(28,63),step=1,label='Filtering by Line Offered:')
                   ),
+                  tabPanel('By Team',
+                           selectizeInput('TeamDistOU', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All")
+                  ),
                   tabPanel("By Season",
                            sliderInput('SeasonsDistOU',min=1979,max=2017,value=c(1979,2017),step=1,label='Seasons:',sep='')
                   ),
@@ -182,16 +202,19 @@ dashboardPage(
               ),
               fluidRow( # O/U by Season
                 h3('Inaccuracy by Season'),
-                h5('Each dot represents the average difference from the realized Over/Under to the line offered by Vegas of every game, by season'),
+                h5('Each dot represents the average difference from the realized Over/Under to the line offered by Vegas of every game, by season.'),
+                h5("Two-Sided Error is positive if the realized score was higher than the offered O/U line, and is negative if lower."),
                 box(
                   plotOutput('OUbySeason')
                 ),
                 tabBox(
                   title = tagList(shiny::icon("gear"), "Modify Chart"),
                   tabPanel('Type of Error',
-                      radioButtons('TypeSeasonOU',label='Chart Shows:',choices = list('Absolute Error'=1,'Two-Sided Error'=2),selected=1),
-                      h5("REMINDER: Two-Sided Error is positive if the realized score was higher than the offered O/U line, and is negative if lower.")
+                      radioButtons('TypeSeasonOU',label='Chart Shows:',choices = list('Two-Sided Error'=1,'Absolute Error'=2),selected=1)
                           ),
+                  tabPanel('By Team',
+                           selectizeInput('TeamSeasonOU', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All")
+                  ),
                   tabPanel('Filter Weeks',
                            sliderInput('WeeksSeasonOU', min=1,max=21,value=c(1,21),step=1,label='Filter Data to Only Include These Weeks:'),
                            h5('Weeks 1 - 17: Regular Season'),
@@ -203,15 +226,18 @@ dashboardPage(
               ),
               fluidRow( # O/U by Week
                 h3('Inaccuracy by Week'),
-                h5('Each dot represents the average difference from the realized Over/Under to the line offered by Vegas of every season, by the weekly schedule'),
+                h5('Each dot represents the average difference from the realized Over/Under to the line offered by Vegas of every season, by the weekly schedule.'),
+                h5("Two-Sided Error is positive if the realized score was higher than the offered O/U line, and is negative if lower."),
                 box(
                   plotOutput('OUbyWeek')
                 ),
                 tabBox(
                   title = tagList(shiny::icon("gear"), "Modify Chart"),
                   tabPanel('Type of Error',
-                    radioButtons('TypeWeekOU',label='Chart Shows:',choices = list('Absolute Error'=1,'Two-Sided Error'=2),selected=1),
-                    h5("REMINDER: Two-Sided Error is positive if the realized score was higher than the offered O/U line, and is negative if lower.")
+                    radioButtons('TypeWeekOU',label='Chart Shows:',choices = list('Two-Sided Error'=1,'Absolute Error'=2),selected=1)
+                  ),
+                  tabPanel('By Team',
+                           selectizeInput('TeamWeekOU', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All")
                   ),
                   tabPanel("Filter Seasons",
                     sliderInput('SeasonWeekOU',min=1979,max=2017,value=c(1979,2017),step=1,label='Filter Data to Only Include These Seasons:',sep='')
