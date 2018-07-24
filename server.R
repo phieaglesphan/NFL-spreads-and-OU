@@ -1,46 +1,55 @@
 shinyServer(function(input, output) {
    
-  spreadsResults <- reactive({ # Reactive function to choose teams in 1st chart (below)
+  spreadsResults <- reactive({ # Reactive function to choose teams in 1st chart "Results Bar Chart" (below)
     if (input$TeamsResultsSpreads!="Select All") { # A team is selected
       teamchoice=input$TeamsResultsSpreads
       team_subset <- subset(nfl, team_home == input$TeamsResultsSpreads | team_away == input$TeamsResultsSpreads)
       if(input$TeamFavResultsSpreads==2) { # If they are the favorite
         team_fav_subset <- subset(team_subset,team_favorite_id==teamchoice)
-        return(team_fav_subset)
+        if(input$TeamLocResultsSpreads==2){ # Favorite == home team
+          team_fav_home_subset <- subset(team_fav_subset,team_home==teamchoice)
+          return(team_fav_home_subset)
+        }
+        else if(input$TeamLocResultsSpreads==3){ # favorite = away team
+          team_fav_road_subset <- subset(team_fav_subset,team_away==teamchoice)
+          return(team_fav_road_subset)
+        }
+        else{ # NO location selected
+          return(team_fav_subset)
+        }
       }
       else if (input$TeamFavResultsSpreads==3) { # If they are the underdog
         team_dog_subset <- subset(team_subset,team_favorite_id!=teamchoice)
-        return(team_dog_subset)
+        if(input$TeamLocResultsSpreads==2){ # Dog == home team
+          team_dog_home_subset <- subset(team_dog_subset,team_home==teamchoice)
+          return(team_dog_home_subset)
+        }
+        else if(input$TeamLocResultsSpreads==3){ # Dog = away team
+          team_dog_road_subset <- subset(team_dog_subset,team_away==teamchoice)
+          return(team_dog_road_subset)
+        }
+        else{ # No location selected
+          return(team_dog_subset)
+        }
       }
       else{ #If the default (no filter) is chosen
         return(team_subset)
       }
     }
     else { # NO TEAM IS Selected
-      return(nfl)
+      if((input$TeamFavResultsSpreads==2 & input$TeamLocResultsSpreads==2)|(input$TeamFavResultsSpreads==3 & input$TeamLocResultsSpreads==3)){ #Home Fav/Road Dog
+        home_fav <- subset(nfl,homeFav==1)
+        return(home_fav)
+      }
+      else if ((input$TeamFavResultsSpreads==2 & input$TeamLocResultsSpreads==3)|(input$TeamFavResultsSpreads==3 & input$TeamLocResultsSpreads==2)){ #Road Fav/Home Dog
+        road_fav <- subset(nfl,homeFav==0)
+        return(road_fav)
+      }
+      else{ # absolutely no filters applied
+        return(nfl)
+      }
     }
   })
-  
-  # spreadsInaccuracySeason <- reactive({ # Reactive function for teams in Spreads Inacc. by Season (below)
-  #   if (input$TeamSeasonSpreads!="Select All") { # IF user did choose a team
-  #     teamchoice=input$TeamSeasonSpreads
-  #     team_subset <- subset(nfl, team_home == teamchoice | team_away == teamchoice)
-  #     if(input$TeamFavSeasonSpreads==2) { # If they are the favorite
-  #       team_fav_subset <- subset(team_subset, team_favorite_id==teamchoice)
-  #       return(team_fav_subset)
-  #     }
-  #     else if (input$TeamFavSeasonSpreads==3) { #If they are the underdog
-  #       team_dog_subset<-subset(team_subset, team_favorite_id!=teamchoice)
-  #       return(team_dog_subset)
-  #     }
-  #     else{ #If the default (no filter) is chosen
-  #       return(team_subset)
-  #     }
-  #   }
-  #   else { #If no team is chosen
-  #     return(nfl)
-  #   }
-  # })
   
   
   output$spreadsResults <- renderPlot({  # RESULTS BAR CHART
@@ -57,19 +66,48 @@ shinyServer(function(input, output) {
       teamchoice=input$TeamDistSpreads
       if(input$TeamFavDistSpreads==2) { # If they are the favorite
         team_fav_subset <- subset(team_subset,team_favorite_id==teamchoice)
-        #location=input$TeamLocDistSpreads   # MIGHT NEED TO CHANGE SCOPE OF THIS
-        return(team_fav_subset)
+        if(input$TeamLocDistSpreads==2){ # The favorite = the home team
+          team_fav_home_subset <- subset(team_fav_subset,team_home==teamchoice)
+          return(team_fav_home_subset)
+        }
+        else if(input$TeamLocDistSpreads==3){ # The favorite = the road team
+          team_fav_road_subset <- subset(team_fav_subset,team_away==teamchoice)
+          return(team_fav_road_subset)
+        }
+        else{  #No location specified
+          return(team_fav_subset)
+        }
       }
       else if (input$TeamFavDistSpreads==3) { # If they are the underdog
         team_dog_subset <- subset(team_subset,team_favorite_id!=teamchoice)
-        return(team_dog_subset)
+        if(input$TeamLocDistSpreads==2){ # The underdog == Home team
+          team_dog_home_subset <- subset(team_dog_subset,team_home==teamchoice)
+          return(team_dog_home_subset)
+        }
+        else if(input$TeamLocDistSpreads==3){ # The underdog == roadteam
+          team_dog_away_subset <- subset(team_dog_subset,team_away==teamchoice)
+          return(team_dog_away_subset)
+        }
+        else{ # No location specified
+          return(team_dog_subset)
+        }
       }
       else{ #If the default (no filter) is chosen
         return(team_subset)
       }
     }
-    else {
-      return(nfl)
+    else { # No team chosen
+      if((input$TeamFavDistSpreads==2 & input$TeamLocDistSpreads==2)|(input$TeamFavDistSpreads==3 & input$TeamLocDistSpreads==3)){ #Home Fav/Road Dog
+        home_fav <- subset(nfl,homeFav==1)
+        return(home_fav)
+      }
+      else if ((input$TeamFavDistSpreads==2 & input$TeamLocDistSpreads==3)|(input$TeamFavDistSpreads==3 & input$TeamLocDistSpreads==2)){ #Road Fav/Home Dog
+        road_fav <- subset(nfl,homeFav==0)
+        return(road_fav)
+      }
+      else{ # absolutely no filters applied
+        return(nfl)
+      }
     }
   })
   
@@ -86,21 +124,52 @@ shinyServer(function(input, output) {
       team_subset <- subset(nfl, team_home == teamchoice | team_away == teamchoice)
       if(input$TeamFavSeasonSpreads==2) { # If they are the favorite
         team_fav_subset <- subset(team_subset, team_favorite_id==teamchoice)
-        return(team_fav_subset)
+        if(input$TeamLocSeasonSpreads==2){ # Favorite == home team
+          team_fav_home_subset <- subset(team_subset, team_home==teamchoice)
+          return(team_fav_home_subset)
+        }
+        else if(input$TeamLocSeasonSpreads==3){ # The favorite == the road team
+          team_fav_road_subset <- subset(team_fav_subset,team_away==teamchoice)
+          return(team_fav_road_subset)
+        }
+        else{ # No location specified
+          return(team_fav_subset)
+        }
       }
-      else if (input$TeamFavSeasonSpreads==3) { #If they are the underdog
-        team_dog_subset<-subset(team_subset, team_favorite_id!=teamchoice)
-        return(team_dog_subset)
+      else if (input$TeamFavSeasonSpreads==3) { # If they are the underdog
+        team_dog_subset <- subset(team_subset,team_favorite_id!=teamchoice)
+        if(input$TeamLocSeasonSpreads==2){ # The underdog == Home team
+          team_dog_home_subset <- subset(team_dog_subset,team_home==teamchoice)
+          return(team_dog_home_subset)
+        }
+        else if(input$TeamLocSeasonSpreads==3){ # The underdog == roadteam
+          team_dog_away_subset <- subset(team_dog_subset,team_away==teamchoice)
+          return(team_dog_away_subset)
+        }
+        else{ # No location specified
+          return(team_dog_subset)
+        }
       }
-      else{ #If the default (no filter) is chosen
+      else{
         return(team_subset)
       }
     }
-    else { #If no team is chosen
-      return(nfl)
-    }
+      else { # No team chosen
+        if((input$TeamFavSeasonSpreads==2 & input$TeamLocSeasonSpreads==2)|(input$TeamFavSeasonSpreads==3 & input$TeamLocSeasonSpreads==3)){ #Home Fav/Road Dog
+          home_fav <- subset(nfl,homeFav==1)
+          return(home_fav)
+        }
+        else if ((input$TeamFavSeasonSpreads==2 & input$TeamLocSeasonSpreads==3)|(input$TeamFavSeasonSpreads==3 & input$TeamLocSeasonSpreads==2)){ #Road Fav/Home Dog
+          road_fav <- subset(nfl,homeFav==0)
+          return(road_fav)
+        }
+        else{ # absolutely no filters applied
+          return(nfl)
+        }
+      }
   })
   
+ 
   output$spreadsInaccuracySeason <- renderPlot({ # SCATTER PLOT FOR SPREADS BY SEASON
     if(input$TypeSeasonSpreads==1){ # Plot if two-sided error
           ggplot(spreadsInaccuracySeason() %>% filter(schedule_week>=input$WeeksSeasonSpreads[1] & schedule_week<=input$WeeksSeasonSpreads[2])
@@ -116,22 +185,52 @@ shinyServer(function(input, output) {
   
   spreadsInaccuracyWeek <- reactive({ # Reactive function for teams in Spreads Inacc. by Week (below)
     if (input$TeamWeekSpreads!="Select All") { # IF the user did choose a team
-      teamchoice2=input$TeamWeekSpreads
+      teamchoice=input$TeamWeekSpreads
       team_subset <- subset(nfl, team_home == input$TeamWeekSpreads | team_away == input$TeamWeekSpreads)
       if(input$TeamFavWeekSpreads==2){ # IF that team is the favorite
-        team_fav_subset <- subset(team_subset, team_favorite_id==teamchoice2)
-        return(team_fav_subset)
+        team_fav_subset <- subset(team_subset, team_favorite_id==teamchoice)
+        if(input$TeamLocWeekSpreads==2){ # Favorite == home team
+          team_fav_home_subset <- subset(team_subset, team_home==teamchoice)
+          return(team_fav_home_subset)
+        }
+        else if(input$TeamLocWeekSpreads==3){ # The favorite == the road team
+          team_fav_road_subset <- subset(team_fav_subset,team_away==teamchoice)
+          return(team_fav_road_subset)
+        }
+        else{ # No location specified
+          return(team_fav_subset)
+        }
       }
-      else if(input$TeamFavWeekSpreads==3){ # IF that team is the underdog
-        team_dog_subset<-subset(team_subset, team_favorite_id!=teamchoice2)
-        return(team_dog_subset)
+      else if (input$TeamFavWeekSpreads==3) { # If they are the underdog
+        team_dog_subset <- subset(team_subset,team_favorite_id!=teamchoice)
+        if(input$TeamLocWeekSpreads==2){ # The underdog == Home team
+          team_dog_home_subset <- subset(team_dog_subset,team_home==teamchoice)
+          return(team_dog_home_subset)
+        }
+        else if(input$TeamLocWeekSpreads==3){ # The underdog == roadteam
+          team_dog_away_subset <- subset(team_dog_subset,team_away==teamchoice)
+          return(team_dog_away_subset)
+        }
+        else{ # No location specified
+          return(team_dog_subset)
+        }
       }
       else{
         return(team_subset)
       }
     }
-    else {
-      return(nfl)
+    else { # No team chosen
+      if((input$TeamFavWeekSpreads==2 & input$TeamLocWeekSpreads==2)|(input$TeamFavWeekSpreads==3 & input$TeamLocWeekSpreads==3)){ #Home Fav/Road Dog
+        home_fav <- subset(nfl,homeFav==1)
+        return(home_fav)
+      }
+      else if ((input$TeamFavWeekSpreads==2 & input$TeamLocWeekSpreads==3)|(input$TeamFavWeekSpreads==3 & input$TeamLocWeekSpreads==2)){ #Road Fav/Home Dog
+        road_fav <- subset(nfl,homeFav==0)
+        return(road_fav)
+      }
+      else{ # absolutely no filters applied
+        return(nfl)
+      }
     }
   })
 

@@ -40,8 +40,12 @@ dashboardPage(
                   ),
                   tabPanel('By Team',
                            selectizeInput('TeamsResultsSpreads', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All"),
-                           h5('When you select a team, you can also select which side of the spread they are on.'),
-                           radioButtons('TeamFavResultsSpreads',label='Selected Team As:',choices=list('(All Games)'=1,'Favorite'=2,'Underdog'=3),selected=1)
+                           h5('When you select a team, you can also select which side of the spread they were on.'),
+                           radioButtons('TeamFavResultsSpreads',label='Selected Team As:',choices=list('(All Games)'=1,'Favorite'=2,'Underdog'=3),selected=1),
+                           h5('You can also select where the games were played.'),
+                           radioButtons('TeamLocResultsSpreads',label='Games Played:',choices=list('(Everywhere)'=1,'At Home'=2,'On the Road'=3),selected=1),
+                           h5("If you don't specify a team, you still can choose a side-of-spread/location combination (ex: Favorite/On the road, 
+                              which is equivalent to Underdog/At Home).")
                   ),
                   tabPanel("By Season",
                            sliderInput('SeasonsResultsSpreads',min=1979,max=2017,value=c(1979,2017),step=1,label='Seasons:',sep='')
@@ -72,10 +76,12 @@ dashboardPage(
                            ),
                   tabPanel('By Team',
                            selectizeInput('TeamDistSpreads', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All"),
-                           h5('When you select a team, you can also select which side of the spread they are on.'),
+                           h5('When you select a team, you can also select which side of the spread they were on.'),
                            radioButtons('TeamFavDistSpreads',label='Selected Team As:',choices=list('(All Games)'=1,'Favorite'=2,'Underdog'=3),selected=1),
-                           h5('You can also select filter by where the games were played.'),
-                           radioButtons('TeamLocDistSpreads',label='Games Played:',choices=list('(Everywhere)'=1,'At Home'=2,'On the Road'=3),selected=1)
+                           h5('You can also select where the games were played.'),
+                           radioButtons('TeamLocDistSpreads',label='Games Played:',choices=list('(Everywhere)'=1,'At Home'=2,'On the Road'=3),selected=1),
+                           h5("If you don't specify a team, you still can choose a side-of-spread/location combination (ex: Favorite/On the road, 
+                              which is equivalent to Underdog/At Home).")
                   ),
                   tabPanel("By Season",
                            sliderInput('SeasonsDistSpreads',min=1979,max=2017,value=c(1979,2017),step=1,label='Seasons:',sep='')
@@ -104,19 +110,20 @@ dashboardPage(
                           ),
                   tabPanel('By Team',
                            selectizeInput('TeamSeasonSpreads', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All"),
-                           h5('When you select a team, you can also select which side of the spread they are on.'),
-                           radioButtons('TeamFavSeasonSpreads',label='Selected Team As:',choices=list('(All Games)'=1,'Favorite'=2,'Underdog'=3),selected=1)
-                  ),
+                           h5('When you select a team, you can also select which side of the spread they were on.'),
+                           radioButtons('TeamFavSeasonSpreads',label='Selected Team As:',choices=list('(All Games)'=1,'Favorite'=2,'Underdog'=3),selected=1),
+                           h5('You can also select where the games were played.'),
+                           radioButtons('TeamLocSeasonSpreads',label='Games Played:',choices=list('(Everywhere)'=1,'At Home'=2,'On the Road'=3),selected=1),
+                           h5("If you don't specify a team, you still can choose a side-of-spread/location combination (ex: Favorite/On the road, 
+                              which is equivalent to Underdog/At Home).")
+                           ),
                   tabPanel("Filter Weeks",
                             sliderInput('WeeksSeasonSpreads', min=1,max=21,value=c(1,21),step=1,label='Filter Data to Only Include These Weeks:'),
                             h5('Weeks 1 - 17: Regular Season'),
                             h5('Weeks 18 - 21: Playoffs'),
                             h5('NOTE: The 17-week regular season format was not adopted until 1990 (was previously 16 games).'),
                             h5('Additionally, the 1982 season was strike-shortened and only consisted of the first 9 regular season weeks.')
-                           ),
-                  tabPanel("Aggregating Method",
-                           radioButtons('MethodSeasonSpreads',label='Points Represent:',choices=list('Mean'=1,'Median'=2,'Individual Games'=3),selected=1)
-                          )
+                           )
                       )
               ),
               fluidRow( # SPREADS - Inaccuracy by Week of Season
@@ -134,13 +141,14 @@ dashboardPage(
                   tabPanel('By Team',
                            selectizeInput('TeamWeekSpreads', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All"),
                            h5('When you select a team, you can also select which side of the spread they are on.'),
-                           radioButtons('TeamFavWeekSpreads',label='Selected Team As:',choices=list('(All Games)'=1,'Favorite'=2,'Underdog'=3),selected=1)
+                           radioButtons('TeamFavWeekSpreads',label='Selected Team As:',choices=list('(All Games)'=1,'Favorite'=2,'Underdog'=3),selected=1),
+                           h5('You can also select where the games were played.'),
+                           radioButtons('TeamLocWeekSpreads',label='Games Played:',choices=list('(Everywhere)'=1,'At Home'=2,'On the Road'=3),selected=1),
+                           h5("If you don't specify a team, you still can choose a side-of-spread/location combination (ex: Favorite/On the road, 
+                              which is equivalent to Underdog/At Home).")
                   ),
                   tabPanel("Filter Seasons",
                             sliderInput('SeasonWeekSpreads',min=1979,max=2017,value=c(1979,2017),step=1,label='Filter Data to Only Include These Seasons:',sep='')
-                           ),
-                  tabPanel("Aggregating Method",
-                           radioButtons('MethodWeekSpreads',label='Points Represent:',choices=list('Mean'=1,'Median'=2,'Individual Games'=3),selected=1)
                            ),
                   h5("NOTE: The vertical line represents the end of the regular season and the beginning of the playoffs.")
                   )
@@ -202,8 +210,8 @@ dashboardPage(
                            h5('Week 18: Wildcard Round'),
                            h5('Week 19: Divisional Round'),
                            h5('Week 20: Conference Championships'),
-                           h5('Week 21: Super Bowl')),
-                  tabPanel("Other Options")
+                           h5('Week 21: Super Bowl')
+                  )
                 )
               ),
               fluidRow( # O/U by Season
@@ -226,8 +234,8 @@ dashboardPage(
                            h5('Weeks 1 - 17: Regular Season'),
                            h5('Weeks 18 - 21: Playoffs'),
                            h5('NOTE: The 17-week regular season format was not adopted until 1990 (was previously 16 games).'),
-                           h5('Additionally, the 1982 season was strike-shortened and only consisted of the first 9 regular season weeks.')),
-                  tabPanel('Other Options')
+                           h5('Additionally, the 1982 season was strike-shortened and only consisted of the first 9 regular season weeks.')
+                  )
                 )
               ),
               fluidRow( # O/U by Week
