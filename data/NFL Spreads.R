@@ -1,23 +1,19 @@
-# USE SHINY APP TO SHOW:
-#   a) how accuracy of lines increases over the season - drop down to select either spread or O/U, dual sliders to look at range of seasons
-#   b) historical success of road favorites - checkbox group  
-#       also neutral location games
-#   c) how garbage games (week 17) are lined
-#   d) huge lines - checkbox group
-#   e) postseason vs regular - checkbox group(?)
-#   f) when the spread is really wrong
-#   g) is home field advantage really worth 3 points?
 
-# initialize dataset
-setwd("C:/Users/maxbs/Documents/R/NFLSpreads/data")
+
+#################################################################### LOAD DATA ####################################################################
+
+# data is found at https://www.kaggle.com/tobycrabtree/nfl-scores-and-betting-data/home and selecting the 'spreadspoke_scores' set
+
+setwd("C:/Users/maxbs/Documents/R/NFL Shiny Project Directory/NFLSpreads/data")
 spreads = read.csv(file='spreadspoke_scores.csv',header=T,stringsAsFactors = F)
 library(dplyr)
 
+names(nfl)
 
+###############################################################   CLEANING THE DATA SET   ############################################################
 
-#   CLEANING THE DATA SET
-
-
+# drop (incomplete) weather columns data
+spreads = spreads %>% select(-weather_humidity,-weather_temperature,-weather_wind_mph)
 
 # spread and O/U data began in 1979 so we only observe this data
 spreads = spreads %>% filter(schedule_season>=1979); nrow(spreads) == 9643 #confirm dataset is right size
@@ -144,9 +140,9 @@ spreads[spreads$schedule_week=='SuperBowl','schedule_week']<-21
 spreads$schedule_week<-as.integer(spreads$schedule_week)
 
 
-#
-#   PREPARE DATA FOR ANALYSIS
-#
+
+###################################################   PREPARE DATA FOR ANALYSIS   ##########################################################33
+
 
 
 #adding the binary is the home team favorite? column 'homeFav'
@@ -167,8 +163,8 @@ spreads = spreads %>% select(-spread_favorite)
 #create Error variable: difference b/w line and result. POSITIVE means favorite covers, NEGATIVE means dog covers
 spreads$Error<-spreads$scoreFavMinDog-spreads$line
 
-#create ErrMag variable: the absolute value of Error. Purely measures inaccuracy of lines
-spreads$ErrMag<-abs(spreads$Error)
+#create 'who covered' variable:
+spreads$whocovered<-ifelse(spreads$Error>0, spreads$whocovered<-'Favorite', ifelse(spreads$Error<0, spreads$whocovered<-'Underdog', spreads$whocovered<-'Push'))
 
 # ADDRESS O/U
 # create 'scoretotal', the sum of the score from games
@@ -177,8 +173,11 @@ spreads$scoretotal=spreads$score_home+spreads$score_away
 # create OUError, realized score minus the vegas line. POSITIVE if teams scored more than vegas line, NEGATIVE if they scored less
 spreads$OUError = spreads$scoretotal-spreads$over_under_line
 
+# create 'which_hit' (similar to 'who covered')
+spreads$which_hit<-ifelse(spreads$OUError>0, spreads$which_hit<-'Over', ifelse(spreads$OUError<0, spreads$which_hit<-'Under', spreads$which_hit<-'Push'))
 
-#WRITE CLEAN BOY IN TO DATA FOLDER
+
+################################################# WRITE CLEAN DATA TO NEW FILE ###################################################################
 
 write.csv(spreads,file='NFL_Spreads_clean.csv',row.names = F)
 

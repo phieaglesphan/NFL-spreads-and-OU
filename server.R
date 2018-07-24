@@ -112,10 +112,18 @@ shinyServer(function(input, output) {
   })
   
   output$spreadsDistribution <- renderPlot({ # HISTOGRAM FOR SPREADS ERROR
+    if(input$MeanCheckSpreads==TRUE){
+      # I apologize for the below line being so long - for some reason the app wouldn't run unless I put all the filters together in one line.
+      plotdata=spreadsDistribution()  %>% filter(line>=input$LineDistSpreads[1] & line<=input$LineDistSpreads[2]) %>% filter(schedule_season>=input$SeasonsDistSpreads[1] & schedule_season<=input$SeasonsDistSpreads[2]) %>% filter(schedule_week>=input$WeekDistSpreads[1] & schedule_week<=input$WeekDistSpreads[2])
+      mn = mean(plotdata$Error)
+      ggplot(plotdata,aes(Error))+geom_histogram(binwidth=input$BinsDistSpreads,col='black',fill='darkgreen') + ylab('Count')+geom_vline(xintercept = mn)
+    }
+    else{
     ggplot(spreadsDistribution()  %>% filter(line>=input$LineDistSpreads[1] & line<=input$LineDistSpreads[2])
            %>% filter(schedule_season>=input$SeasonsDistSpreads[1] & schedule_season<=input$SeasonsDistSpreads[2])
            %>% filter(schedule_week>=input$WeekDistSpreads[1] & schedule_week<=input$WeekDistSpreads[2])
-           ,aes(Error)) + geom_histogram(bins=input$BinsDistSpreads,col='black',fill='darkgreen') + ylab('Count')
+           ,aes(Error)) + geom_histogram(binwidth=input$BinsDistSpreads,col='black',fill='darkgreen') + ylab('Count')
+    }
   })
   
   spreadsInaccuracySeason <- reactive({ # Reactive function for teams in Spreads Inacc. by Season (below)
@@ -242,7 +250,7 @@ shinyServer(function(input, output) {
     }
     else{ #Plot if absolut Error
       ggplot(spreadsInaccuracyWeek() %>% filter(schedule_season>=input$SeasonWeekSpreads[1] & schedule_season<=input$SeasonWeekSpreads[2])
-             %>% group_by(schedule_week) %>% summarise(m=mean(ErrMag)),aes(schedule_week,m))+geom_point(color='darkgreen',size=4)+
+             %>% group_by(schedule_week) %>% summarise(m=mean(abs(Error))),aes(schedule_week,m))+geom_point(color='darkgreen',size=4)+
             geom_vline(xintercept=17.5)+ylab('Avg. Point Differential')+xlab('Week of Schedule')
     }
   })
@@ -278,10 +286,17 @@ shinyServer(function(input, output) {
   })
   
   output$ouHistogram <- renderPlot({ # HISTOGRAM FOR O/U 
-    ggplot(ouHistogram()  %>% filter(over_under_line>=input$LineDistOU[1] & over_under_line<=input$LineDistOU[2])
-            %>%  filter(schedule_season>=input$SeasonsDistOU[1] & schedule_season<=input$SeasonsDistOU[2])
-           %>% filter(schedule_week>=input$WeekDistOU[1] & schedule_week<=input$WeekDistOU[2])
-           ,aes(OUError)) + geom_histogram(bins=input$BinsDistOU,col='black',fill='darkgreen')+ylab('Count')+xlab('Error')
+    if(input$MeanCheckOU==TRUE){ #If SHow Mean Line is checked
+    plotdata <- ouHistogram()  %>% filter(over_under_line>=input$LineDistOU[1] & over_under_line<=input$LineDistOU[2])  %>% filter(schedule_season>=input$SeasonsDistOU[1] & schedule_season<=input$SeasonsDistOU[2])  %>% filter(schedule_week>=input$WeekDistOU[1] & schedule_week<=input$WeekDistOU[2])
+      mn=mean(plotdata$OUError)
+      ggplot(plotdata,aes(OUError)) + geom_histogram(binwidth=input$BinsDistOU,col='black',fill='darkgreen')+ylab('Count')+xlab('Error')+geom_vline(xintercept = mn)
+    }
+    else{ # If Show Mean Line is not checked
+      ggplot(ouHistogram()  %>% filter(over_under_line>=input$LineDistOU[1] & over_under_line<=input$LineDistOU[2]) 
+        %>% filter(schedule_season>=input$SeasonsDistOU[1] & schedule_season<=input$SeasonsDistOU[2]) 
+        %>% filter(schedule_week>=input$WeekDistOU[1] & schedule_week<=input$WeekDistOU[2])
+      ,aes(OUError)) + geom_histogram(binwidth=input$BinsDistOU,col='black',fill='darkgreen')+ylab('Count')+xlab('Error')
+    }
   })
   
   OUbySeason <- reactive({ # Reactive function for teams in OU Inacc. by Season (below)

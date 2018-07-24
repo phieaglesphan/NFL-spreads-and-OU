@@ -1,16 +1,13 @@
-dashboardPage(
+dashboardPage( skin='black',
   dashboardHeader(title = "NFL Gambling Data"
                   ),
   dashboardSidebar(
     sidebarMenu(
       menuItem("Background", tabName = "background"
-               #, icon = icon()
                ),
       menuItem("Spreads", tabName = "spreads"
-               #, icon = icon()
                ),
       menuItem("Over/Under",tabName = "overunder"
-               #, icon = icon()
                )
   )),
   dashboardBody(
@@ -69,8 +66,11 @@ dashboardPage(
                 tabBox(
                   title = tagList(shiny::icon("gear"), "Modify Chart"),
                   tabPanel("Bins",
-                           sliderInput('BinsDistSpreads',min = 5,max = 50,value = 30,step = 5,label = 'Number of Bins for Histogram:')
+                           sliderInput('BinsDistSpreads',min = 0.5,max = 10,value = 3,step = 0.5,label = 'Number of Points Each Bin Represents:')
                            ),
+                  tabPanel('Show Mean',
+                           checkboxInput("MeanCheckSpreads", label = "Show Mean Line", value = FALSE)
+                  ),
                   tabPanel('By Line',
                            sliderInput('LineDistSpreads',min=0,max=27,value=c(0,27),step=1,label='Filtering by Magnitude of Line:')
                            ),
@@ -92,10 +92,10 @@ dashboardPage(
                            h5('Week 18: Wildcard Round'),
                            h5('Week 19: Divisional Round'),
                            h5('Week 20: Conference Championships'),
-                           h5('Week 21: Super Bowl')),
-                  tabPanel("Other Options"
-                           
-              ))),
+                           h5('Week 21: Super Bowl')
+                           )
+                    )
+                ),
               fluidRow( # SPREADS - Inaccuracy by Season
                 h3('Inaccuracy by Season'),
                 h5('Each dot represents the average difference from the realized spread to the line offered by Vegas of every game, by season.'),
@@ -181,7 +181,8 @@ dashboardPage(
                            h5('Week 18: Wildcard Round'),
                            h5('Week 19: Divisional Round'),
                            h5('Week 20: Conference Championships'),
-                           h5('Week 21: Super Bowl'))
+                           h5('Week 21: Super Bowl')
+                  )
                 )
               ),
               fluidRow(   # OU Distribution of Error
@@ -193,7 +194,10 @@ dashboardPage(
                 tabBox(
                   title = tagList(shiny::icon("gear"), "Modify Chart"),
                   tabPanel("Bins",
-                           sliderInput('BinsDistOU',min = 5,max = 50,value = 30,step = 5,label = 'Number of Bins for Histogram:')
+                           sliderInput('BinsDistOU',min = 0.5,max = 10,value = 3,step = 0.5,label = 'Number of Points Each Bin Represents:')
+                  ),
+                  tabPanel('Show Mean',
+                           checkboxInput("MeanCheckOU", label = "Show Mean Line", value = FALSE)
                   ),
                   tabPanel('By Line',
                            sliderInput('LineDistOU', min=28,max=63,value=c(28,63),step=1,label='Filtering by Line Offered:')
