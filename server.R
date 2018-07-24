@@ -2,26 +2,71 @@ shinyServer(function(input, output) {
    
   spreadsResults <- reactive({ # Reactive function to choose teams in 1st chart (below)
     if (input$TeamsResultsSpreads!="Select All") { # A team is selected
+      teamchoice=input$TeamsResultsSpreads
       team_subset <- subset(nfl, team_home == input$TeamsResultsSpreads | team_away == input$TeamsResultsSpreads)
-      return(team_subset)
+      if(input$TeamFavResultsSpreads==2) { # If they are the favorite
+        team_fav_subset <- subset(team_subset,team_favorite_id==teamchoice)
+        return(team_fav_subset)
+      }
+      else if (input$TeamFavResultsSpreads==3) { # If they are the underdog
+        team_dog_subset <- subset(team_subset,team_favorite_id!=teamchoice)
+        return(team_dog_subset)
+      }
+      else{ #If the default (no filter) is chosen
+        return(team_subset)
+      }
     }
-    else {
+    else { # NO TEAM IS Selected
       return(nfl)
     }
   })
+  
+  # spreadsInaccuracySeason <- reactive({ # Reactive function for teams in Spreads Inacc. by Season (below)
+  #   if (input$TeamSeasonSpreads!="Select All") { # IF user did choose a team
+  #     teamchoice=input$TeamSeasonSpreads
+  #     team_subset <- subset(nfl, team_home == teamchoice | team_away == teamchoice)
+  #     if(input$TeamFavSeasonSpreads==2) { # If they are the favorite
+  #       team_fav_subset <- subset(team_subset, team_favorite_id==teamchoice)
+  #       return(team_fav_subset)
+  #     }
+  #     else if (input$TeamFavSeasonSpreads==3) { #If they are the underdog
+  #       team_dog_subset<-subset(team_subset, team_favorite_id!=teamchoice)
+  #       return(team_dog_subset)
+  #     }
+  #     else{ #If the default (no filter) is chosen
+  #       return(team_subset)
+  #     }
+  #   }
+  #   else { #If no team is chosen
+  #     return(nfl)
+  #   }
+  # })
+  
   
   output$spreadsResults <- renderPlot({  # RESULTS BAR CHART
     ggplot(spreadsResults() %>% filter(line>=input$LineResultsSpreads[1] & line<=input$LineResultsSpreads[2])
            %>% filter(schedule_season>=input$SeasonsResultsSpreads[1] & schedule_season<=input$SeasonsResultsSpreads[2])
           %>% filter(schedule_week>=input$WeekResultsSpreads[1] & schedule_week<=input$WeekResultsSpreads[2])
-          %>% group_by(c=sign(Error)) %>% summarise(n=length(sign(Error))),aes(reorder(c,-n),n)) +
-          geom_col(fill='darkgreen',color='black')+xlab('Result')+ylab('Count')
+          %>% group_by(c=whocovered) %>% summarise(n=n()), aes(reorder(c,-n),n)) +
+          geom_col(fill='darkgreen',color='black')+xlab('Who Covered')+ylab('Count')
   })
   
   spreadsDistribution <- reactive({ # Reactive function for teams in Spreads Histogram (below)
-    if (input$TeamDistSpreads!="Select All") {
+    if (input$TeamDistSpreads!="Select All") { # If a team is chosen
       team_subset <- subset(nfl, team_home == input$TeamDistSpreads | team_away == input$TeamDistSpreads)
-      return(team_subset)
+      teamchoice=input$TeamDistSpreads
+      if(input$TeamFavDistSpreads==2) { # If they are the favorite
+        team_fav_subset <- subset(team_subset,team_favorite_id==teamchoice)
+        #location=input$TeamLocDistSpreads   # MIGHT NEED TO CHANGE SCOPE OF THIS
+        return(team_fav_subset)
+      }
+      else if (input$TeamFavDistSpreads==3) { # If they are the underdog
+        team_dog_subset <- subset(team_subset,team_favorite_id!=teamchoice)
+        return(team_dog_subset)
+      }
+      else{ #If the default (no filter) is chosen
+        return(team_subset)
+      }
     }
     else {
       return(nfl)
@@ -64,7 +109,7 @@ shinyServer(function(input, output) {
     }
     else{ # Plot if absolute error
       ggplot(spreadsInaccuracySeason() %>% filter(schedule_week>=input$WeeksSeasonSpreads[1] & schedule_week<=input$WeeksSeasonSpreads[2])
-             %>% group_by(schedule_season) %>% summarise(m=mean(ErrMag)), aes(schedule_season,m))+
+             %>% group_by(schedule_season) %>% summarise(m=mean(abs(Error))), aes(schedule_season,m))+
         geom_point(color='darkgreen',size=4)+ylab('Avg. Point Differential')+xlab('NFL Season')
     }  
   })
@@ -119,7 +164,7 @@ shinyServer(function(input, output) {
     ggplot(OUResults() %>% filter(over_under_line>=input$LineResultsOU[1] & over_under_line<=input$LineResultsOU[2])
            %>% filter(schedule_season>=input$SeasonsResultsOU[1] & schedule_season<=input$SeasonsResultsOU[2])
            %>% filter(schedule_week>=input$WeekResultsOU[1] & schedule_week<=input$WeekResultsOU[2])
-           %>% group_by(c=sign(OUError)) %>% summarise(n=length(sign(OUError))),aes(reorder(c,-n),n)) +
+           %>% group_by(c=which_hit) %>% summarise(n=n()),aes(reorder(c,-n),n)) +
           geom_col(fill='darkgreen',color='black')+xlab('Result')+ylab('Count')
   })
   

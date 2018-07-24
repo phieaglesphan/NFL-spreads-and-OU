@@ -39,7 +39,9 @@ dashboardPage(
                            sliderInput('LineResultsSpreads',min=0,max=27,value=c(0,27),step=1,label='Filtering by Magnitude of Line:')
                   ),
                   tabPanel('By Team',
-                           selectizeInput('TeamsResultsSpreads', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All")
+                           selectizeInput('TeamsResultsSpreads', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All"),
+                           h5('When you select a team, you can also select which side of the spread they are on.'),
+                           radioButtons('TeamFavResultsSpreads',label='Selected Team As:',choices=list('(All Games)'=1,'Favorite'=2,'Underdog'=3),selected=1)
                   ),
                   tabPanel("By Season",
                            sliderInput('SeasonsResultsSpreads',min=1979,max=2017,value=c(1979,2017),step=1,label='Seasons:',sep='')
@@ -69,7 +71,11 @@ dashboardPage(
                            sliderInput('LineDistSpreads',min=0,max=27,value=c(0,27),step=1,label='Filtering by Magnitude of Line:')
                            ),
                   tabPanel('By Team',
-                           selectizeInput('TeamDistSpreads', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All")
+                           selectizeInput('TeamDistSpreads', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All"),
+                           h5('When you select a team, you can also select which side of the spread they are on.'),
+                           radioButtons('TeamFavDistSpreads',label='Selected Team As:',choices=list('(All Games)'=1,'Favorite'=2,'Underdog'=3),selected=1),
+                           h5('You can also select filter by where the games were played.'),
+                           radioButtons('TeamLocDistSpreads',label='Games Played:',choices=list('(Everywhere)'=1,'At Home'=2,'On the Road'=3),selected=1)
                   ),
                   tabPanel("By Season",
                            sliderInput('SeasonsDistSpreads',min=1979,max=2017,value=c(1979,2017),step=1,label='Seasons:',sep='')
