@@ -14,12 +14,10 @@ dashboardPage( skin='black',
     tabItems(
       tabItem(tabName="background",
             fluidRow(
-              h3('A Brief Introduction of NFL Gambling'),
+              h3('Introduction to NFL Gambling'),
               h5(intro),
               h3('The Data'),
               h5(thedata),
-              h3("Author's Note"),
-              h5(note),
               img(src='https://imagesvc.timeincapp.com/v3/fan/image?url=https://fansided.com/wp-content/uploads/getty-images/2018/02/908549714-nfc-championship-minnesota-vikings-v-philadelphia-eagles.jpg.jpg&',
                   width='100%',height='100%')
               )),
