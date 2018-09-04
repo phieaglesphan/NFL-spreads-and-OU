@@ -106,6 +106,9 @@ dashboardPage( skin='black',
                   tabPanel("Type of Error",
                            radioButtons('TypeSeasonSpreads',label='Chart Shows:',choices = list('Two-Sided Error'=1,'Absolute Error'=2),selected=1)
                           ),
+                  tabPanel('Show Line',
+                           checkboxInput('LMSeasonSpreads', label = 'Include Regression Line', value = FALSE)
+                          ),
                   tabPanel('By Team',
                            selectizeInput('TeamSeasonSpreads', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All"),
                            h5('When you select a team, you can also select which side of the spread they were on.'),
@@ -136,6 +139,9 @@ dashboardPage( skin='black',
                   tabPanel("Type of Error",
                            radioButtons('TypeWeekSpreads',label='Chart Shows:',choices = list('Two-Sided Error'=1,'Absolute Error'=2),selected=1)
                            ),
+                  tabPanel('Show Line',
+                           checkboxInput('LMWeekSpreads', label = 'Include Regression Line', value = FALSE)
+                          ),
                   tabPanel('By Team',
                            selectizeInput('TeamWeekSpreads', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All"),
                            h5('When you select a team, you can also select which side of the spread they are on.'),
@@ -228,6 +234,9 @@ dashboardPage( skin='black',
                   tabPanel('Type of Error',
                       radioButtons('TypeSeasonOU',label='Chart Shows:',choices = list('Two-Sided Error'=1,'Absolute Error'=2),selected=1)
                           ),
+                  tabPanel('Show Line',
+                           checkboxInput('LMSeasonOU', label = 'Include Regression Line', value = FALSE)
+                           ),
                   tabPanel('By Team',
                            selectizeInput('TeamSeasonOU', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All")
                   ),
@@ -251,6 +260,9 @@ dashboardPage( skin='black',
                   title = tagList(shiny::icon("gear"), "Modify Chart"),
                   tabPanel('Type of Error',
                     radioButtons('TypeWeekOU',label='Chart Shows:',choices = list('Two-Sided Error'=1,'Absolute Error'=2),selected=1)
+                  ),
+                  tabPanel('Show Line',
+                    checkboxInput('LMWeekOU', label = 'Include Regression Line', value = FALSE)
                   ),
                   tabPanel('By Team',
                            selectizeInput('TeamWeekOU', label='Team:',choices=c("Select All", sort(unique(nfl$team_home))), selected="Select All")

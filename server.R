@@ -179,6 +179,21 @@ shinyServer(function(input, output) {
   
  
   output$spreadsInaccuracySeason <- renderPlot({ # SCATTER PLOT FOR SPREADS BY SEASON
+    if(input$LMSeasonSpreads==T){ # If line is selected
+      if(input$TypeSeasonSpreads==1){ # Plot if two-sided error
+        ggplot(spreadsInaccuracySeason() %>% filter(schedule_week>=input$WeeksSeasonSpreads[1] & schedule_week<=input$WeeksSeasonSpreads[2])
+               %>% group_by(schedule_season) %>% summarise(m=mean(Error)), aes(schedule_season,m))+
+          geom_point(color='darkgreen',size=4)+geom_hline(yintercept = 0)+ylab('Avg. Point Differential')+xlab('NFL Season')+
+          geom_smooth(method='lm',se=F,col='black')
+      }
+      else{ # Plot if absolute error
+        ggplot(spreadsInaccuracySeason() %>% filter(schedule_week>=input$WeeksSeasonSpreads[1] & schedule_week<=input$WeeksSeasonSpreads[2])
+               %>% group_by(schedule_season) %>% summarise(m=mean(abs(Error))), aes(schedule_season,m))+
+          geom_point(color='darkgreen',size=4)+ylab('Avg. Point Differential')+xlab('NFL Season')+
+          geom_smooth(method='lm',se=F,col='black')
+      } 
+    }
+    else{ # If the line is not selected (default)
     if(input$TypeSeasonSpreads==1){ # Plot if two-sided error
           ggplot(spreadsInaccuracySeason() %>% filter(schedule_week>=input$WeeksSeasonSpreads[1] & schedule_week<=input$WeeksSeasonSpreads[2])
           %>% group_by(schedule_season) %>% summarise(m=mean(Error)), aes(schedule_season,m))+
@@ -188,7 +203,7 @@ shinyServer(function(input, output) {
       ggplot(spreadsInaccuracySeason() %>% filter(schedule_week>=input$WeeksSeasonSpreads[1] & schedule_week<=input$WeeksSeasonSpreads[2])
              %>% group_by(schedule_season) %>% summarise(m=mean(abs(Error))), aes(schedule_season,m))+
         geom_point(color='darkgreen',size=4)+ylab('Avg. Point Differential')+xlab('NFL Season')
-    }  
+    }}  
   })
   
   spreadsInaccuracyWeek <- reactive({ # Reactive function for teams in Spreads Inacc. by Week (below)
@@ -243,15 +258,31 @@ shinyServer(function(input, output) {
   })
 
   output$spreadsInaccuracyWeek <- renderPlot({ # SCATTER PLOT FOR SPREADS BY WEEK
-    if(input$TypeWeekSpreads==1){ #Plot if two-sided Error
-      ggplot(spreadsInaccuracyWeek() %>% filter(schedule_season>=input$SeasonWeekSpreads[1] & schedule_season<=input$SeasonWeekSpreads[2])
+    if(input$LMWeekSpreads==T){ # If line is selected
+      if(input$TypeWeekSpreads==1){ #Plot if two-sided Error
+        ggplot(spreadsInaccuracyWeek() %>% filter(schedule_season>=input$SeasonWeekSpreads[1] & schedule_season<=input$SeasonWeekSpreads[2])
              %>% group_by(schedule_week) %>% summarise(m=mean(Error)),aes(schedule_week,m))+geom_point(color='darkgreen',size=4)+
-              geom_hline(yintercept = 0)+geom_vline(xintercept=17.5)+ylab('Avg. Point Differential')+xlab('Week of Schedule')
-    }
+        geom_hline(yintercept = 0)+geom_vline(xintercept=17.5)+ylab('Avg. Point Differential')+xlab('Week of Schedule')+
+          geom_smooth(method='lm',se=F,col='black')
+      }
     else{ #Plot if absolut Error
       ggplot(spreadsInaccuracyWeek() %>% filter(schedule_season>=input$SeasonWeekSpreads[1] & schedule_season<=input$SeasonWeekSpreads[2])
              %>% group_by(schedule_week) %>% summarise(m=mean(abs(Error))),aes(schedule_week,m))+geom_point(color='darkgreen',size=4)+
+        geom_vline(xintercept=17.5)+ylab('Avg. Point Differential')+xlab('Week of Schedule')+
+        geom_smooth(method='lm',se=F,col='black')
+      }
+    }
+    else{
+      if(input$TypeWeekSpreads==1){ #Plot if two-sided Error
+        ggplot(spreadsInaccuracyWeek() %>% filter(schedule_season>=input$SeasonWeekSpreads[1] & schedule_season<=input$SeasonWeekSpreads[2])
+             %>% group_by(schedule_week) %>% summarise(m=mean(Error)),aes(schedule_week,m))+geom_point(color='darkgreen',size=4)+
+              geom_hline(yintercept = 0)+geom_vline(xintercept=17.5)+ylab('Avg. Point Differential')+xlab('Week of Schedule')
+      }
+      else{ #Plot if absolut Error
+        ggplot(spreadsInaccuracyWeek() %>% filter(schedule_season>=input$SeasonWeekSpreads[1] & schedule_season<=input$SeasonWeekSpreads[2])
+             %>% group_by(schedule_week) %>% summarise(m=mean(abs(Error))),aes(schedule_week,m))+geom_point(color='darkgreen',size=4)+
             geom_vline(xintercept=17.5)+ylab('Avg. Point Differential')+xlab('Week of Schedule')
+      }
     }
   })
 
@@ -310,6 +341,21 @@ shinyServer(function(input, output) {
   })
   
   output$OUbySeason <- renderPlot({
+    if(input$LMSeasonOU==T){ # If the line is included
+      if(input$TypeSeasonOU==1){ # Plot if two-sided Error
+        ggplot(OUbySeason() %>% filter(!is.na(over_under_line)) %>% filter(schedule_week>=input$WeeksSeasonOU[1] & schedule_week<=input$WeeksSeasonOU[2]) 
+             %>% group_by(schedule_season) %>% summarise(m=mean(OUError)),aes(schedule_season,m))+
+        geom_point(color='darkgreen',size=4)+geom_hline(yintercept = 0)+ylab('Avg. Point Differential')+xlab('NFL Season')+
+        geom_smooth(method = 'lm',se=F,col='black')
+    }
+      else{ # Plot for absolute error
+        ggplot(OUbySeason() %>% filter(!is.na(over_under_line)) %>% filter(schedule_week>=input$WeeksSeasonOU[1] & schedule_week<=input$WeeksSeasonOU[2]) 
+             %>% group_by(schedule_season) %>% summarise(m=mean(abs(OUError))),aes(schedule_season,m))+
+        geom_point(color='darkgreen',size=4)+ylab('Avg. Point Differential')+xlab('NFL Season')+
+          geom_smooth(method = 'lm',se=F,col='black')
+    }
+    }
+    else{ # Line is not included
     if(input$TypeSeasonOU==1){ # Plot if two-sided Error
       ggplot(OUbySeason() %>% filter(!is.na(over_under_line)) %>% filter(schedule_week>=input$WeeksSeasonOU[1] & schedule_week<=input$WeeksSeasonOU[2]) 
              %>% group_by(schedule_season) %>% summarise(m=mean(OUError)),aes(schedule_season,m))+
@@ -319,7 +365,7 @@ shinyServer(function(input, output) {
       ggplot(OUbySeason() %>% filter(!is.na(over_under_line)) %>% filter(schedule_week>=input$WeeksSeasonOU[1] & schedule_week<=input$WeeksSeasonOU[2]) 
              %>% group_by(schedule_season) %>% summarise(m=mean(abs(OUError))),aes(schedule_season,m))+
             geom_point(color='darkgreen',size=4)+ylab('Avg. Point Differential')+xlab('NFL Season')
-    }
+    }}
   })
   
   OUbyWeek <- reactive({ # Reactive function for teams in OU Inacc. by Season (below)
@@ -333,15 +379,31 @@ shinyServer(function(input, output) {
   })
   
   output$OUbyWeek <- renderPlot({
-    if(input$TypeWeekOU==1){ # Plot if two-sided Error
+    if(input$LMWeekOU==T){ # If line is included
+      if(input$TypeWeekOU==1){ # Plot if two-sided Error
         ggplot(OUbyWeek() %>% filter(!is.na(over_under_line)) %>% filter(schedule_season>=input$SeasonWeekOU[1] & schedule_season<=input$SeasonWeekOU[2]) 
         %>% group_by(schedule_week) %>% summarise(m=mean(OUError)),aes(schedule_week,m))+
-        geom_point(color='darkgreen',size=4)+geom_hline(yintercept = 0)+geom_vline(xintercept = 17.5)+ylab('Avg. Point Differential')+xlab('Week of Schedule')
+        geom_point(color='darkgreen',size=4)+geom_hline(yintercept = 0)+geom_vline(xintercept = 17.5)+ylab('Avg. Point Differential')+
+          xlab('Week of Schedule')+geom_smooth(method = 'lm',se=F,col='black')
     }
     else { # Plot if absolute error
         ggplot(OUbyWeek() %>% filter(!is.na(over_under_line)) %>% filter(schedule_season>=input$SeasonWeekOU[1] & schedule_season<=input$SeasonWeekOU[2]) 
         %>% group_by(schedule_week) %>% summarise(m=mean(abs(OUError))),aes(schedule_week,m))+
-        geom_point(color='darkgreen',size=4)+geom_vline(xintercept = 17.5)+ylab('Avg. Point Differential')+xlab('Week of Schedule')
+        geom_point(color='darkgreen',size=4)+geom_vline(xintercept = 17.5)+ylab('Avg. Point Differential')+xlab('Week of Schedule')+
+        geom_smooth(method = 'lm',se=F,col='black')
+    }
+    }
+    else{ # Line is not included
+      if(input$TypeWeekOU==1){ # Plot if two-sided Error
+        ggplot(OUbyWeek() %>% filter(!is.na(over_under_line)) %>% filter(schedule_season>=input$SeasonWeekOU[1] & schedule_season<=input$SeasonWeekOU[2]) 
+               %>% group_by(schedule_week) %>% summarise(m=mean(OUError)),aes(schedule_week,m))+
+          geom_point(color='darkgreen',size=4)+geom_hline(yintercept = 0)+geom_vline(xintercept = 17.5)+ylab('Avg. Point Differential')+xlab('Week of Schedule')
+      }
+      else { # Plot if absolute error
+        ggplot(OUbyWeek() %>% filter(!is.na(over_under_line)) %>% filter(schedule_season>=input$SeasonWeekOU[1] & schedule_season<=input$SeasonWeekOU[2]) 
+               %>% group_by(schedule_week) %>% summarise(m=mean(abs(OUError))),aes(schedule_week,m))+
+          geom_point(color='darkgreen',size=4)+geom_vline(xintercept = 17.5)+ylab('Avg. Point Differential')+xlab('Week of Schedule')
+      }
     }
   })
 })
